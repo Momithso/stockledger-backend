@@ -1,0 +1,13 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./:/usr/src/app:cached
+      - /usr/src/app/node_modules
+    command: npx nodemon --watch src --ext ts,js,json --legacy-watch --exec "tsx --env-file=.env src/index.ts"
+    ports:
+      - "3000:3000"

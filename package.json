@@ -1,0 +1,31 @@
+{
+  "name": "stockledger-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx tsx --env-file=.env --watch  src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Momithso/stockledger-backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Momithso/stockledger-backend/issues"
+  },
+  "homepage": "https://github.com/Momithso/stockledger-backend#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongodb": "^6.20.0",
+    "nodemon": "^3.1.10",
+    "tsx": "^4.20.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.5.2"
+  }
+}
