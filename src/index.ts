@@ -2,10 +2,10 @@ import express, { Request, Response } from "express";
 import mainRoutes from './routes/routes'
 import { MongoClient } from "mongodb";
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-const DB_URI = process.env.MONGO_URI || "<>";
-export let dbClient: MongoClient;
+export const app = express();
+export const PORT = process.env.PORT || 3000;
+export const DB_URI = process.env.MONGO_URI || "<>";
+let dbClient: MongoClient;
 
 /**
  * Main Router
