@@ -15,6 +15,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runtime
     restart: unless-stopped
     env_file: 
       - .env

@@ -1,40 +1,33 @@
 # Dockerfile
-# Multi-stage build: build assets (if any) then run in slim runtime image
-
-# === build stage ===
-FROM node:24.8.0-alpine3.22 AS build
+# === base ===
+FROM node:24.8.0-alpine3.22 AS base
 WORKDIR /usr/src/app
-
-# Install build deps (optional)
-# RUN apk add --no-cache make gcc g++ python3
-
-# Copy and install dependencies
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
 
-# Copy app sources
+# === dev ===
+FROM base AS dev
+ENV NODE_ENV=development
+RUN npm ci              # alle deps, inkl. dev
 COPY . .
+CMD ["npx", "tsx", "--env-file=.env", "--watch", "src/index.ts"]
 
-# If you have a build step, run it here (uncomment if needed)
-# RUN npm run build
+# === build ===
+FROM base AS build
+ENV NODE_ENV=production
+RUN npm ci              # inkl. dev (für tsc)
+COPY . .
+RUN npx tsc             # kompiliert nach /dist
 
-# === runtime stage ===
+# === runtime ===
 FROM node:24.8.0-alpine3.22 AS runtime
 WORKDIR /usr/src/app
-
-# Create non-root user
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
-
-# Copy only production node_modules and app files
-COPY --from=build --chown=appuser:appgroup /usr/src/app ./
-
 ENV NODE_ENV=production
+
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev   # nur prod deps
+
+COPY --from=build /usr/src/app/dist ./dist
+
 EXPOSE 3000
+CMD ["node", "dist/index.js"]
 
-# Healthcheck (simple TCP check)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --spider --quiet http://localhost:3000/health || exit 1
-
-# Start the app
-CMD ["npx", "tsx", "--env-file=.env", "--watch", "src/index.ts"]

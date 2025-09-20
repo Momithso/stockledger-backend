@@ -1,53 +1,63 @@
-import express, { Request, Response } from "express";
+import express, { json, Request, Response } from "express";
+import fs from 'fs'
 import mainRoutes from './routes/routes'
-import { MongoClient } from "mongodb";
+import { api, database, system } from "./utils/logger";
+import cors from "cors"
+import helmet from "helmet";
+import mongoose from "mongoose";
 
 export const app = express();
 export const PORT = process.env.PORT || 3000;
 export const DB_URI = process.env.MONGO_URI || "<>";
-let dbClient: MongoClient;
-
-/**
- * Main Router
- */
-app.use('/api/v1', mainRoutes);
-
-/**
- * Greeting message
- */
-app.get("/", (req: Request, res: Response) => {
-    res.json({ message: "Welcome to the Express + TypeScript Server!" });
-});
+export const rootPath = process.cwd();
 
 /**
  * Start server
  */
 async function start() {
   try {
-    dbClient = new MongoClient(DB_URI);
-    await dbClient.connect();
-    console.log('Connected to MongoDB');
 
-    // Beispiel: Sammlung referenzieren
-    const db = dbClient.db(process.env.MONGO_INITDB_DATABASE || 'appdb');
-    app.locals.db = db;
+    /**
+     * Connect to database
+     */
+    await mongoose.connect(DB_URI);
+    database.info('Connected to MongoDB');
 
+    /**
+     * Create collections
+     */
+
+    /**
+     * Read JWT Keys
+     */
+    const privateKey = fs.readFileSync(rootPath + "/jwtRS256.key", "utf-8");
+    const publicKey = fs.readFileSync(rootPath + "/jwtRS256.key.pub", "utf-8");
+    app.locals.jwt = { privateKey, publicKey };
+    system.info('JWT Keys loaded');
+
+    /**
+     * Middlewares
+     */
+    app.use(cors());
+    app.use(helmet());
+    app.use(express.json());
+    app.use(express.urlencoded());
+
+    /**
+     * Main Router
+     */
+    app.use('/api/v1', mainRoutes);
+    system.info("Routes loaded")
+
+    /**
+     * Listener
+     */
     app.listen(PORT, () => {
-      console.log(`App listening on port ${PORT}`);
+      system.info(`App listening on port ${PORT}`);
     });
   } catch (err) {
-    console.error('Failed to connect to MongoDB:', err);
+    system.error('Starting API Failed:', err);
     process.exit(1);
   }
 }
-
-start();
-
-/**
- * Stop server with db
- */
-process.on('SIGINT', async () => {
-    console.log('SIGINT received, closing MongoDB connection');
-    if (dbClient) await dbClient.close();
-    process.exit(0);
-});
+await start();

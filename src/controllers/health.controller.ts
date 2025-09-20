@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express"
-import { dbClient } from '../index'
+import mongoose from "mongoose";
 
 export const checkMongoDB = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (dbClient && dbClient.topology?.isConnected()) {
+        if (mongoose.connection.readyState == 1) {
             return res.status(200).send({
                 status: 200,
                 services: {

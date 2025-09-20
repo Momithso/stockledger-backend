@@ -1,6 +1,6 @@
 export type AuthenticateUserRequest = {
-    username: string,
-    password: string
+    email: any,
+    password: any
 }
 
 export type AuthenticateKeyRequest = {
@@ -9,4 +9,15 @@ export type AuthenticateKeyRequest = {
 
 export type AuthenticateAnswer = {
     token: string,
+}
+
+export type AuthenticateError = {
+    status: 401 | 400,
+    message: "Unauthorized" | "No known user with this email" | "Wrong password"
+}
+
+export type JwtPayloadUser = {
+    type: "user",
+    _id: string,
+    email: string
 }
