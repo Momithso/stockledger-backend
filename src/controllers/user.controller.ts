@@ -1,11 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { api } from "../utils/logger";
 import { validateRequest } from "../utils/validate";
 import { userModel } from "../models/user.model";
 import bcrypt from 'bcrypt';
 import { CreateUserError, CreateUserAnswer, User } from "../types/user.type";
-import { app } from "..";
 
 const saltRounds = 10;
 
@@ -17,8 +15,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
         createdAt: new Date(Date.now()).getTime()
     }
 
-    const _token = req.headers.authorization?.split(" ")[1];
-
     let err: CreateUserError = {
         status: 400,
         message: "Bad Request"
@@ -28,16 +24,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
         // check request data
         err.message = "Missing Arguments";
         if (!validateRequest(data)) return res.status(err.status).json(err);
-        if (!_token) return res.status(err.status).json(err);
-        
-        // check token
-        err.status = 401;
-        err.message = "Unauthorized";
-        let verifyErr;
-        jwt.verify(_token, app.locals.jwt.privateKey, { algorithms: ['RS256'] } ,(_err: any, decoded: any) => {
-            verifyErr = _err;
-        })
-        if (verifyErr) return res.status(err.status).json(err);
 
         // check if user is already there with this email
         const _user = await userModel.findOne({ email: data.email });

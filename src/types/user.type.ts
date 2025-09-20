@@ -1,8 +1,11 @@
+import { permission } from "./permission.type"
+
 export interface User {
     name: string,
     email: string,
     password: string,
-    createdAt: number
+    createdAt: number,
+    permissions?: [permission]
 }
 
 export type CreateUserError = {
