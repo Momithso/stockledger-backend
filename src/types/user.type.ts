@@ -5,7 +5,7 @@ export interface User {
     email: string,
     password: string,
     createdAt: number,
-    permissions?: [permission]
+    permissions?: [permission] | boolean
 }
 
 export type CreateUserError = {
